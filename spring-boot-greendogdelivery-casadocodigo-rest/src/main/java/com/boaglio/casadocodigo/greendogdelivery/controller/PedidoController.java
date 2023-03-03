@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.boaglio.casadocodigo.greendogdelivery.component.EnviaNotificacao;
 import com.boaglio.casadocodigo.greendogdelivery.domain.Cliente;
 import com.boaglio.casadocodigo.greendogdelivery.domain.Item;
 import com.boaglio.casadocodigo.greendogdelivery.domain.Pedido;
@@ -31,12 +32,14 @@ public class PedidoController {
 	private final PedidoRepository pedidoRepository;
 	private final ItemRepository itemRepository;
 	private final ClienteRepository clienteRepository;
+	private final EnviaNotificacao enviaNotificacao;
 	private final String ITEM_URI = "pedidos/";
 
-	public PedidoController(PedidoRepository pedidoRepository,ItemRepository itemRepository,ClienteRepository clienteRepository) {
+	public PedidoController(PedidoRepository pedidoRepository,ItemRepository itemRepository,ClienteRepository clienteRepository, EnviaNotificacao enviaNotificacao) {
 		this.pedidoRepository = pedidoRepository;
 		this.itemRepository = itemRepository;
 		this.clienteRepository = clienteRepository;
+		this.enviaNotificacao = enviaNotificacao;
 	}
 
 	@GetMapping("/")
@@ -94,6 +97,7 @@ public class PedidoController {
 			pedido = this.pedidoRepository.save(pedido);
 			c.getPedidos().add(pedido);
 			this.clienteRepository.save(c);
+			enviaNotificacao.enviaEmail(c, pedido);
 		}
 		redirect.addFlashAttribute("globalMessage","Pedido gravado com sucesso");
 		return new ModelAndView("redirect:/" + ITEM_URI + "{pedido.id}","pedido.id",pedido.getId());
